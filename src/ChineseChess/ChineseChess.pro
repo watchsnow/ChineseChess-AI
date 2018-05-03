@@ -8,3 +8,5 @@ SOURCES += \
     Chesspiece.cpp
 
 QT  += widgets gui
+
+QMAKE_CXXFLAGS += -Wno-unused-parameter

@@ -68,3 +68,10 @@ void Chesspiece::init(int id)
     }
 }
 
+// 旋转棋盘
+void Chesspiece::rotate()
+{
+    this->_column = 8-this->_column;
+    this->_row    = 9-this->_row;
+}
+

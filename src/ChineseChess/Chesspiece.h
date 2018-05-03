@@ -8,7 +8,7 @@ class Chesspiece
 public:
     Chesspiece();
     ~Chesspiece();
-    // 给旗子添加一些属性
+    // 给棋子添加一些属性
     typedef enum tagType{
         Generals, // 将
         Guards,   // 士
@@ -30,6 +30,7 @@ public:
 
     QString getText();
     void init(int id);
+    void rotate();
 };
 
 #endif // CHESSPIECE_H
