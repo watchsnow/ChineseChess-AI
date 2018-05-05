@@ -9,18 +9,22 @@ class ArtificialIntelligence : public Board
 public:
     ArtificialIntelligence()
     {
-         _level = 4; // 考虑的层次
+         _level = 5; // 考虑的层次
     }
 
     virtual void click(int id, int row, int col);
     Step* getBestMove();
-    void getAllPossibleSteps(QVector<Step*>& steps);
+    void getAllPossibleSteps(QVector<Step*>& steps);  // 这是可以优化一下(是一个优化的方向)
     void fakeMove(Step* step);
     void unFakeMove(Step* step);
-    int calcScore();
-    int getMinScore(int level);
-    int getMaxScore(int level);
+    int calcScore();       // 局面分也太粗糙 可以继续优化  其实每个棋子在每个位置上分值是不一样的
+    int getMinScore(int level, int curMaxScore);
+    int getMaxScore(int level, int curMinScore);
 
+    /*
+    数据结构也是优化的方向 比如 象棋都是用得整形(就要优化)
+    还有canmove 也可优化 都会被调用多次
+    */
 public slots:
     void computerMove();
 

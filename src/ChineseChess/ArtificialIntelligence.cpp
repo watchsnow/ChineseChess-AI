@@ -45,7 +45,7 @@ Step* ArtificialIntelligence::getBestMove()
         fakeMove(step);    // 算好了
         // 计算局面分
         //int score = calcScore(); // 越高越好
-        int score = getMinScore(_level-1);
+        int score = getMinScore(_level-1, maxScore);
         unFakeMove(step);  // 拿回来
         if(score > maxScore)
         {
@@ -151,7 +151,7 @@ int ArtificialIntelligence::calcScore()
     return blkChessTotalScore - redChessTotalScore;
 }
 
-int ArtificialIntelligence::getMinScore(int level)
+int ArtificialIntelligence::getMinScore(int level, int curMaxScore)
 {
     if(level == 0)
     {
@@ -170,18 +170,30 @@ int ArtificialIntelligence::getMinScore(int level)
         fakeMove(step);    // 算好了
         // 计算局面分
         //int score = calcScore(); // 越高越好
-        int score = getMaxScore(level-1); // 越高越好
+        int score = getMaxScore(level-1, minScore); // 越高越好
         unFakeMove(step);  // 拿回来
+        delete step; // 释放内存
+        // 进行剪枝 提高效率
+        if(score <= curMaxScore)
+        {
+            while(steps.count())  // 清除剩下的内存
+            {
+                Step* step = steps.back();
+                steps.removeLast();
+                delete step;
+            }
+            return score;  // 后面的很多的Steps都不用去考虑了 节约了计算
+        }
+
         if(score < minScore)
         {
             minScore=score;
         }
-        delete step; // 释放内存
     }
     return minScore;
 }
 
-int ArtificialIntelligence::getMaxScore(int level)
+int ArtificialIntelligence::getMaxScore(int level, int curMinScore)
 {
     if(level == 0)
     {
@@ -199,13 +211,25 @@ int ArtificialIntelligence::getMaxScore(int level)
         fakeMove(step);    // 算好了
         // 计算局面分
         //int score = calcScore(); // 越高越好
-        int score = getMinScore(level-1); // 越高越好
+        int score = getMinScore(level-1,maxScore); // 越高越好
         unFakeMove(step);  // 拿回来
+        delete step; // 释放内存
+
+        if(score >= curMinScore)
+        {
+            while(steps.count())  // 清除剩下的内存
+            {
+                Step* step = steps.back();
+                steps.removeLast();
+                delete step;
+            }
+            return score;
+        }
+
         if(score > maxScore)
         {
             maxScore=score;
         }
-        delete step; // 释放内存
     }
     return maxScore;
 }
