@@ -11,12 +11,13 @@ void ArtificialIntelligence::click(int id, int row, int col)
     if(!this->_bRedTurn)
     {
         // 电脑走
-        Step* step = getBestComputerMove();
+        Step* step = getBestMove();
         moveStone(step->_moveid, step->_killid, step->_rowTo, step->_colTo);
+        delete step; // 避免了内存泄漏
     }
 }
 
-Step* ArtificialIntelligence::getBestComputerMove()
+Step* ArtificialIntelligence::getBestMove()
 {
     /*
     1. 看看有哪些步骤可以走
@@ -32,20 +33,32 @@ Step* ArtificialIntelligence::getBestComputerMove()
     // 2. 试着走一下  通过迭代器 遍历走法
     // 3. 评估走的结果
     int maxScore = -100000;
-    Step* ret;
-    for(QVector<Step*>::iterator it = steps.begin(); it!=steps.end(); ++it)
+    Step* ret = NULL;
+    //for(QVector<Step*>::iterator it = steps.begin(); it!=steps.end(); ++it)
+    while(steps.count())
     {
-        Step* step = *it;
+        //Step* step = *it;
+        Step* step = steps.back();
+        steps.removeLast();
         // 取出 steps
         // 设计一个假的Move(step);
         fakeMove(step);    // 算好了
         // 计算局面分
-        int score = calcScore(); // 越高越好
+        //int score = calcScore(); // 越高越好
+        int score = getMinScore();
         unFakeMove(step);  // 拿回来
         if(score > maxScore)
         {
             maxScore = score; // 最高Score对应的Step 就是我们需要参考的Step
+            if(ret)
+            {
+                delete ret;
+            }
             ret = step;       // 这个Step就是我们要的
+        }
+        else
+        {
+            delete step; // 不能随便丢掉
         }
     }
 
@@ -56,8 +69,16 @@ Step* ArtificialIntelligence::getBestComputerMove()
 
 void ArtificialIntelligence::getAllPossibleSteps(QVector<Step *> &steps)
 {
+    // 增加找红棋的
+    int min=16, max=32;
+    if(this->_bRedTurn)
+    {
+        min=0, max = 16;
+    }
+
+    // 找黑棋的
     // 遍历所有的棋子 看看哪里可以走
-    for(int i = 16; i< 32; ++i) // 遍历黑棋
+    for(int i = min; i< max; ++i) // 遍历黑棋
     {
         // 去掉死棋
         if(_s[i]._dead)
@@ -128,4 +149,29 @@ int ArtificialIntelligence::calcScore()
         blkChessTotalScore += chessScore[_s[i]._type];
     }
     return blkChessTotalScore - redChessTotalScore;
+}
+
+int ArtificialIntelligence::getMinScore()
+{
+    QVector<Step*> steps;
+    getAllPossibleSteps(steps); // 是红棋的possibleMove
+    int minScore = 10000000;
+    //for(QVector<Step*>::iterator it = steps.begin(); it!=steps.end(); ++it)
+    while(steps.count())
+    {
+        Step* step = steps.back();
+        steps.removeLast(); // 清理内存
+        // 取出 steps
+        // 设计一个假的Move(step);
+        fakeMove(step);    // 算好了
+        // 计算局面分
+        int score = calcScore(); // 越高越好
+        unFakeMove(step);  // 拿回来
+        if(score < minScore)
+        {
+            minScore=score;
+        }
+        delete step; // 释放内存
+    }
+    return minScore;
 }
