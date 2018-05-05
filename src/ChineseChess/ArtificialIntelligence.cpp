@@ -1,4 +1,6 @@
 #include "ArtificialIntelligence.h"
+#include <QTimer>
+
 
 void ArtificialIntelligence::click(int id, int row, int col)
 {
@@ -10,10 +12,8 @@ void ArtificialIntelligence::click(int id, int row, int col)
     Board::click(id, row, col);
     if(!this->_bRedTurn)
     {
-        // 电脑走
-        Step* step = getBestMove();
-        moveStone(step->_moveid, step->_killid, step->_rowTo, step->_colTo);
-        delete step; // 避免了内存泄漏
+        // 启动一个0.1 秒定时器 主进程被阻塞 界面没法的到响应 在0.1 秒后电脑在思考
+        QTimer::singleShot(100, this, SLOT(computerMove()));
     }
 }
 
@@ -45,7 +45,7 @@ Step* ArtificialIntelligence::getBestMove()
         fakeMove(step);    // 算好了
         // 计算局面分
         //int score = calcScore(); // 越高越好
-        int score = getMinScore();
+        int score = getMinScore(_level-1);
         unFakeMove(step);  // 拿回来
         if(score > maxScore)
         {
@@ -151,8 +151,12 @@ int ArtificialIntelligence::calcScore()
     return blkChessTotalScore - redChessTotalScore;
 }
 
-int ArtificialIntelligence::getMinScore()
+int ArtificialIntelligence::getMinScore(int level)
 {
+    if(level == 0)
+    {
+        return calcScore();
+    }
     QVector<Step*> steps;
     getAllPossibleSteps(steps); // 是红棋的possibleMove
     int minScore = 10000000;
@@ -165,7 +169,8 @@ int ArtificialIntelligence::getMinScore()
         // 设计一个假的Move(step);
         fakeMove(step);    // 算好了
         // 计算局面分
-        int score = calcScore(); // 越高越好
+        //int score = calcScore(); // 越高越好
+        int score = getMaxScore(level-1); // 越高越好
         unFakeMove(step);  // 拿回来
         if(score < minScore)
         {
@@ -174,4 +179,43 @@ int ArtificialIntelligence::getMinScore()
         delete step; // 释放内存
     }
     return minScore;
+}
+
+int ArtificialIntelligence::getMaxScore(int level)
+{
+    if(level == 0)
+    {
+        return calcScore();
+    }
+    QVector<Step*> steps;
+    getAllPossibleSteps(steps); // 是红棋的possibleMove
+    int maxScore = -10000000;
+    while(steps.count())
+    {
+        Step* step = steps.back();
+        steps.removeLast(); // 清理内存
+        // 取出 steps
+        // 设计一个假的Move(step);
+        fakeMove(step);    // 算好了
+        // 计算局面分
+        //int score = calcScore(); // 越高越好
+        int score = getMinScore(level-1); // 越高越好
+        unFakeMove(step);  // 拿回来
+        if(score > maxScore)
+        {
+            maxScore=score;
+        }
+        delete step; // 释放内存
+    }
+    return maxScore;
+}
+
+void ArtificialIntelligence::computerMove()
+{
+    // 电脑走
+    Step* step = getBestMove();
+    moveStone(step->_moveid, step->_killid, step->_rowTo, step->_colTo);
+    delete step; // 避免了内存泄漏
+    // 重绘窗口
+    update();
 }
