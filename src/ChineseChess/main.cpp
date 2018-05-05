@@ -1,10 +1,10 @@
 #include <QApplication>
-#include "Board.h"
+#include "ArtificialIntelligence.h"
 
-int main(int argc,char* argv[])
+int main(int argc, char* argv[])
 {
-    QApplication app(argc,argv);
-    Board board;
+    QApplication app(argc, argv);
+    ArtificialIntelligence board;
     board.show();
     return app.exec();
 }

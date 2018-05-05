@@ -1,11 +1,15 @@
 HEADERS += \
     Board.h \
-    Chesspiece.h
+    Step.h \
+    Stone.h \
+    ArtificialIntelligence.h
 
 SOURCES += \
     Board.cpp \
     Main.cpp \
-    Chesspiece.cpp
+    Step.cpp \
+    Stone.cpp \
+    ArtificialIntelligence.cpp
 
 QT  += widgets gui
 
