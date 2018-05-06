@@ -9,7 +9,7 @@ class ArtificialIntelligence : public Board
 public:
     ArtificialIntelligence()
     {
-         _level = 5; // 考虑的层次
+         _level = 1; // 考虑的层次
     }
 
     virtual void click(int id, int row, int col);
